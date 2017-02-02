@@ -61,7 +61,7 @@ function getOpenStackFlags(){
 function getDMFlags(){
 
     local provider=$1
-    if [ "$provider" == "local" ];then
+    if [ "$provider" == "none" ];then
         echo "local"
     elif [ "$provider" == "openstack" ];then
         getOpenStackFlags
