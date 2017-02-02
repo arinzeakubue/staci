@@ -46,6 +46,12 @@ function buildBaseImage(){
       eval $(docker-machine env "$node_prefix-crucible")
       docker build -t staci/base:$version $STACI_HOME/images/base/context/ > $STACI_HOME/logs/base.crucible.build.log 2>&1 &
     fi
+    
+#Build an image for jenkins too -- test!
+    if [ "$start_jenkins" == "1" ]; then
+      echo "   - Building base image on Crucible instance."
+      eval $(docker-machine env "$node_prefix-jenkins")
+      docker build -t staci/base:$version $STACI_HOME/images/base/context/ > $STACI_HOME/logs/base.jenkins.build.log 2>&1 &
 
   else
     if [ ! "$provider_type" == "none" ];then
@@ -137,6 +143,25 @@ function buildBitbucket(){
   fi
 }
 
+function jenkins(){
+  if [ "$start_jenkins" == "1" ]; then
+    if [ "$cluster" == "1" ]; then
+      eval $(docker-machine env "$node_prefix-jenkins")
+    else
+      if [ ! "$provider_type" == "none" ];then
+        node_prefix=$(getProperty "clusterNodePrefix")
+        eval $(docker-machine env $node_prefix-Atlassian)
+      fi
+    fi
+    jenkinsContextPath=$(getProperty "jenkins_contextpath")
+    jenkinsContextPath='\'$jenkinsContextPath
+    echo "sed -i -e 's/path=\"\"/path=\"$jenkinsContextPath\"/g' /opt/atlassian/jenins/conf/server.xml" > $STACI_HOME/images/jenkins/context/setContextPath.sh
+    chmod u+x $STACI_HOME/images/jenkins/context/setContextPath.sh
+    echo "   - Building jenkins image"
+    docker build -t staci/jenkins:$version $STACI_HOME/images/jenkins/context/ > $STACI_HOME/logs/jenkins.build.log 2>&1 &
+  fi
+}
+
 function buildMySQL(){
   if [ "$start_mysql" == "1" ]; then
     if [ "$cluster" == "1" ]; then
@@ -188,16 +213,17 @@ function buildAtlassian(){
     buildJira 
     buildConfluence 
     buildBamboo 
+    build jenkins
     buildBitbucket 
     buildMySQL 
     buildCrowd 
     buildCrucible    
-
   wait
 
 }
 
 function buildAll(){
+  start_jenkins=$(getProperty "start_jenkins")
   start_jira=$(getProperty "start_jira")
   start_confluence=$(getProperty "start_confluence")
   start_bamboo=$(getProperty "start_bamboo")

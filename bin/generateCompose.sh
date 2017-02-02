@@ -12,6 +12,7 @@ start_bamboo=$(getProperty "start_bamboo")
 start_crowd=$(getProperty "start_crowd")
 start_bitbucket=$(getProperty "start_bitbucket")
 start_crucible=$(getProperty "start_crucible")
+start_jenkins=$(getProperty "start_jenkins")
 
 volume_dir=$(getProperty "volume_dir")
 timezone=$(getProperty "time_zone")
@@ -266,5 +267,36 @@ networks:
   back:
     driver: overlay
 
+EOF
+fi
+
+#Printing jenkins specific yml
+if [ "$start_jenkins" == "1" ]; then
+if [ "$cluster" == 1 ]; then
+  cluster_opts='    environment:
+      - "constraint:node=='$node_prefix'-jenkins"
+    networks:
+      - back'
+else
+  if [ ! "$provider_type" == "none" ];then
+    cluster_opts=''
+  else
+    cluster_opts='    volumes:
+      - '$volume_dir'/jenkins:/var/atlassian/jenkins'
+  fi
+fi
+
+cat << EOF
+  bitbucket:
+    image: staci/jenkins:$version
+    container_name: jenkins
+    hostname: jenkins
+    expose:
+      - "8080"
+      - "50000"
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+$cluster_opts
 EOF
 fi

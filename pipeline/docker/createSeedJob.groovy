@@ -22,10 +22,10 @@ def project = new FreeStyleProject(Jenkins.instance, jobName)
 
 List<BranchSpec> branches = Collections.singletonList(new BranchSpec('*/master'))
 List<UserRemoteConfig> repos = Collections.singletonList(
-    new UserRemoteConfig('https://github.com/Praqma/staci.git',
+    new UserRemoteConfig('https://github.com/arinzeakubue/game-of-life.git',
         '',
         '',
-        'jenkins'))
+        'arinzeakubue'))
 GitSCM scm = new GitSCM(repos,
     branches,
     false,
