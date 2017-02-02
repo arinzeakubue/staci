@@ -52,7 +52,7 @@ function buildBaseImage(){
       echo "   - Building base image on Crucible instance."
       eval $(docker-machine env "$node_prefix-jenkins")
       docker build -t staci/base:$version $STACI_HOME/images/base/context/ > $STACI_HOME/logs/base.jenkins.build.log 2>&1 &
-
+    fi
   else
     if [ ! "$provider_type" == "none" ];then
       node_prefix=$(getProperty "clusterNodePrefix")
@@ -143,7 +143,7 @@ function buildBitbucket(){
   fi
 }
 
-function jenkins(){
+function buildJenkins(){
   if [ "$start_jenkins" == "1" ]; then
     if [ "$cluster" == "1" ]; then
       eval $(docker-machine env "$node_prefix-jenkins")
@@ -213,7 +213,7 @@ function buildAtlassian(){
     buildJira 
     buildConfluence 
     buildBamboo 
-    build jenkins
+    buildJenkins
     buildBitbucket 
     buildMySQL 
     buildCrowd 
